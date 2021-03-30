@@ -5,15 +5,14 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import mx.dev.blank.entity.Student;
-import mx.dev.blank.entity.Student_;
+import mx.dev.blank.entity.*;
+import mx.dev.blank.model.CourseStudentDTO;
 import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
@@ -21,6 +20,53 @@ public class StudentJpaDAO implements StudentDAO {
 
   @Setter(onMethod = @__(@PersistenceContext), value = AccessLevel.PACKAGE)
   private EntityManager em;
+
+  /**
+   * SELECT c.name
+   * FROM course
+   *   JOIN courseTeacher ct ON c.id = ct.course_id
+   *   JOIN student s ON ct.id = ct.course_teacher
+   *   GROUP BY c.name
+   */
+
+  @Override
+  public List<CourseTeacher> getAssignedCourseByUuid(final String studentUuid) {
+    final CriteriaBuilder builder = em.getCriteriaBuilder();
+    final CriteriaQuery<CourseTeacher> query = builder.createQuery(CourseTeacher.class);
+    final Root<CourseTeacher> root = query.from(CourseTeacher.class);
+
+    final Join<CourseTeacher, Course> joinCourse = root.join(CourseTeacher_.course);
+    final Join<CourseTeacher, Student> joinStudent = root.join(CourseTeacher_.student);
+
+    query.multiselect(
+            joinCourse.get(Course_.id),
+            joinCourse.get(Course_.name));
+
+    query.where(builder.equal(joinStudent.get(Student_.uuid), studentUuid));
+
+    return em.createQuery(query).getResultList();
+  }
+
+  @Override
+  public List<CourseStudentDTO> getCourseAndTeacherByUuid(final String uuid) {
+    final CriteriaBuilder builder = em.getCriteriaBuilder();
+    final CriteriaQuery<CourseStudentDTO> query = builder.createQuery(CourseStudentDTO.class);
+    final Root<CourseTeacher> root = query.from(CourseTeacher.class);
+
+    final Join<CourseTeacher, Student> joinStudent = root.join(CourseTeacher_.student);
+    final Join<CourseTeacher, Course> joinCourse = root.join(CourseTeacher_.course);
+    final Join<CourseTeacher, Teacher> joinTeacher = root.join(CourseTeacher_.teacher);
+
+    query.multiselect(
+            joinCourse.get(Course_.name),
+            joinCourse.get(Course_.keycode),
+            joinTeacher.get(Teacher_.name));
+
+    query.where(builder.equal(joinStudent.get(Student_.uuid), uuid));
+
+    return em.createQuery(query).getResultList();
+  }
+
 
   @Override
   public List<Student> getStudentsBySearchCriteria(
