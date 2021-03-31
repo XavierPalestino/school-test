@@ -18,7 +18,9 @@ import mx.dev.blank.entity.Room_;
 import mx.dev.blank.entity.Teacher;
 import mx.dev.blank.entity.Teacher_;
 import mx.dev.blank.model.CourseRoomDTO;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class TeacherJpaDAO implements TeacherDAO {
 

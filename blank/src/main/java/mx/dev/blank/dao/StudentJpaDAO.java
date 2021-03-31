@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 
 import lombok.AccessLevel;
@@ -14,7 +13,9 @@ import lombok.Setter;
 import mx.dev.blank.entity.*;
 import mx.dev.blank.model.CourseStudentDTO;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Repository;
 
+@Repository
 @RequiredArgsConstructor
 public class StudentJpaDAO implements StudentDAO {
 
@@ -30,13 +31,15 @@ public class StudentJpaDAO implements StudentDAO {
    */
 
   @Override
-  public List<CourseTeacher> getAssignedCourseByUuid(final String studentUuid) {
+  public List<CourseStudentDTO> getAssignedCourseByUuid(final String studentUuid) {
     final CriteriaBuilder builder = em.getCriteriaBuilder();
-    final CriteriaQuery<CourseTeacher> query = builder.createQuery(CourseTeacher.class);
-    final Root<CourseTeacher> root = query.from(CourseTeacher.class);
+    final CriteriaQuery<CourseStudentDTO> query = builder.createQuery(CourseStudentDTO.class);
+    final Root<CourseStudent> root = query.from(CourseStudent.class);
+    final Root<CourseTeacher> join = query.from(CourseTeacher.class);
 
-    final Join<CourseTeacher, Course> joinCourse = root.join(CourseTeacher_.course);
-    final Join<CourseTeacher, Student> joinStudent = root.join(CourseTeacher_.student);
+    final Join<CourseStudent, Student> joinStudent = root.join(CourseStudent_.student);
+    final Join<CourseTeacher, Course> joinCourse = join.join(CourseTeacher_.course);
+
 
     query.multiselect(
             joinCourse.get(Course_.id),
@@ -51,11 +54,12 @@ public class StudentJpaDAO implements StudentDAO {
   public List<CourseStudentDTO> getCourseAndTeacherByUuid(final String uuid) {
     final CriteriaBuilder builder = em.getCriteriaBuilder();
     final CriteriaQuery<CourseStudentDTO> query = builder.createQuery(CourseStudentDTO.class);
-    final Root<CourseTeacher> root = query.from(CourseTeacher.class);
+    final Root<CourseStudent> root = query.from(CourseStudent.class);
+    final Root<CourseTeacher> join = query.from(CourseTeacher.class);
 
-    final Join<CourseTeacher, Student> joinStudent = root.join(CourseTeacher_.student);
-    final Join<CourseTeacher, Course> joinCourse = root.join(CourseTeacher_.course);
-    final Join<CourseTeacher, Teacher> joinTeacher = root.join(CourseTeacher_.teacher);
+    final Join<CourseStudent, Student> joinStudent = root.join(CourseStudent_.student);
+    final Join<CourseTeacher, Teacher> joinTeacher = join.join(CourseTeacher_.teacher);
+    final Join<CourseTeacher, Course> joinCourse = join.join(CourseTeacher_.course);
 
     query.multiselect(
             joinCourse.get(Course_.name),

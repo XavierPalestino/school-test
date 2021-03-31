@@ -1,10 +1,15 @@
 package mx.dev.blank.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 public class CourseStudentDTO {
 
-    private String courseName;
-    private String courseTeacherName;
+    private int id;
+    private String name;
+    private String keycode;
+    private String teacherName;
 }

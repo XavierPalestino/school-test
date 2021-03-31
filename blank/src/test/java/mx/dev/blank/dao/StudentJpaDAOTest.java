@@ -1,12 +1,12 @@
 package mx.dev.blank.dao;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import com.beust.jcommander.internal.Lists;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import mx.dev.blank.DAOTestConfig;
 import mx.dev.blank.DBTestConfig;
-import mx.dev.blank.entity.CourseTeacher;
-import mx.dev.blank.entity.Student;
+import mx.dev.blank.model.CourseStudentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
@@ -31,21 +31,41 @@ public class StudentJpaDAOTest extends AbstractTransactionalTestNGSpringContextT
 
     @DataProvider
     public Object[][] getAssignedCourseByUuid_dataProvider() {
-        List<Integer> studentsIDs = Lists.newArrayList(1);
+        List<String> courseNames = Lists.newArrayList("HISTORIA");
 
 
         return new Object[][] {
-                {"18011190", studentsIDs}
+                {"U-1", courseNames}
+        };
+    }
+
+    @DataProvider
+    public Object[][] getCourseAndTeacherByUuid_dataProvider() {
+        List<String> courseNames = Lists.newArrayList("HISTORIA");
+
+
+        return new Object[][] {
+                {"U-1", courseNames}
         };
     }
 
     @Test(dataProvider = "getAssignedCourseByUuid_dataProvider")
     @DatabaseSetup(DBUNIT_XML)
     public void getByUuid_should_returnCourse(final String uuidQuery,
-                                             final List<Integer> expectedIDs) {
-        final List<CourseTeacher> students = studentJpaDAO.getAssignedCourseByUuid(uuidQuery);
+                                                        final List<String> expectedNames) {
+        final List<CourseStudentDTO> courses = studentJpaDAO.getCourseAndTeacherByUuid(uuidQuery);
 
-        assertThat(students).extracting(Student -> Student.getId()).hasSameElementsAs(expectedIDs);
+        assertThat(courses).extracting(CourseStudentDTO -> CourseStudentDTO.getName()).hasSameElementsAs(expectedNames);
+    }
+
+    @Test(dataProvider = "getCourseAndTeacherByUuid_dataProvider")
+    @DatabaseSetup(DBUNIT_XML)
+    public void getByUuid_should_returnCourseAndTeacher(final String uuidQuery,
+                                              final List<String> expectedNames) {
+        final List<CourseStudentDTO> courses = studentJpaDAO.getCourseAndTeacherByUuid(uuidQuery);
+
+        assertThat(courses).extracting(CourseStudentDTO -> CourseStudentDTO.getName()).hasSameElementsAs(expectedNames);
+        assertThat(courses).extracting(CourseStudentDTO -> CourseStudentDTO.getTeacherName()).hasSameElementsAs(expectedNames);
     }
 
 }

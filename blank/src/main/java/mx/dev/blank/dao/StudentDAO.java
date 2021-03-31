@@ -1,6 +1,6 @@
 package mx.dev.blank.dao;
 
-import mx.dev.blank.entity.CourseTeacher;
+import mx.dev.blank.entity.CourseStudent;
 import mx.dev.blank.entity.Student;
 import mx.dev.blank.model.CourseStudentDTO;
 import org.springframework.validation.annotation.Validated;
@@ -19,7 +19,7 @@ public interface StudentDAO {
       @NotNull Date rangeStart,
       @NotNull Date rangeEnd);
 
-  List<CourseTeacher> getAssignedCourseByUuid(final String studentUuid);
+  List<CourseStudentDTO> getAssignedCourseByUuid(final String studentUuid);
 
   List<CourseStudentDTO> getCourseAndTeacherByUuid(final String uuid);
 }
